@@ -1,0 +1,36 @@
+name: run-python-scripts-and-publish-to-vercel
+on:
+  workflow_dispatch:
+  schedule:
+    - cron:  '0,30 * * * *'
+
+jobs:
+  run-python-scripts-and-publish-to-vercel:
+    runs-on: ubuntu-20.04
+    env:
+      NOTION_AUTH: ${{secrets.NOTION_AUTH}}
+      NOTION_DATABASE_ID: ${{secrets.NOTION_DATABASE_ID}}
+    permissions: write-all
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.8.0'
+      - run: pip install notion-client
+      - run: python update_content.py
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v2
+        with:
+          hugo-version: '0.85.0'
+          extended: true
+      - run: git clone --branch dev --depth 1 https://github.com/FarseaSH/hugo-theme-moments.git ./themes/moments
+      - name: Hugo build
+        run: hugo
+      - uses: amondnet/vercel-action@v20
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          vercel-args: '--prod'
+          vercel-org-id: ${{ secrets.ORG_ID}}  #Required
+          vercel-project-id: ${{ secrets.PROJECT_ID}} #Required 
+          working-directory: ./public
