@@ -1,6 +1,7 @@
 name: run-python-scripts-and-publish-to-vercel
 on:
   workflow_dispatch:
+  push:
   schedule:
     - cron:  '0,30 * * * *'
 
